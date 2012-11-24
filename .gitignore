@@ -1,0 +1,12 @@
+*.egg-info
+env/
+*.un~
+.*.swp
+*.pyc
+*.db
+settings_local.py
+doc/_build
+# epio stuff
+epio.ini
+.epio-app
+.epioignore
