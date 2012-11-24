@@ -41,4 +41,4 @@ BY-NC-SA 2.0).
 Check the original photo here: http://www.flickr.com/photos/mrmorodo/8174824430/
 
 Special thanks to [Miquel Herrera for his JS libraries for the canvas
-scrollingi](http://hitconsultants.com/dragscroll_scrollsync/scrollpane.html).
+scrolling](http://hitconsultants.com/dragscroll_scrollsync/scrollpane.html).
