@@ -39,3 +39,6 @@ http://docs.pybossa.com/en/latest/user/create-application-tutorial.html
 The thumbnail has been created using a photo from [TempusVolat](http://www.flickr.com/photos/mrmorodo/8174824430/) (license CC
 BY-NC-SA 2.0). 
 Check the original photo here: http://www.flickr.com/photos/mrmorodo/8174824430/
+
+Special thanks to [Miquel Herrera for his JS libraries for the canvas
+scrollingi](http://hitconsultants.com/dragscroll_scrollsync/scrollpane.html).
