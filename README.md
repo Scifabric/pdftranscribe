@@ -29,7 +29,7 @@ Then, you can follow the next steps:
 
 *  Create an account in crowdcrafting.org 
 *  Copy under your account profile your API-KEY
-*  Run python createTasks.py -u http://pybossa.com -k API-KEY -f http://domain/yourpdf -p numPages
+*  Run python createTasks.py -u http://crowdcrafting.org -k API-KEY -f http://domain/yourpdf -p numPages
 *  Open with your browser the Applications section and choose the PDF Transcribe app. This will open the presenter for this demo application.
 
 Please, check the full documentation here about how to create an app:
