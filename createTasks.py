@@ -79,7 +79,7 @@ if __name__ == "__main__":
 
     if not options.api_url:
         options.api_url = 'http://localhost:5000/'
-        pbclient.set('endpoint', options.api_url)
+    pbclient.set('endpoint', options.api_url)
 
     if not options.api_key:
         parser.error("You must supply an API-KEY to create an \
