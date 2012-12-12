@@ -56,9 +56,9 @@ if __name__ == "__main__":
                      )
 
     # Update tasks question
-    parser.add_option("-q", "--update-tasks", action="store_true",
+    parser.add_option("-q", "--update-tasks",
                       dest="update_tasks",
-                      help="Update Tasks question",
+                      help="Update Tasks n_answers",
                       metavar="UPDATE-TASKS"
                      )
 
@@ -150,9 +150,21 @@ if __name__ == "__main__":
     if options.update_tasks:
         print "Updating task question"
         app = pbclient.find_app(short_name=app_config['short_name'])[0]
-        for task in pbclient.get_tasks(app.id):
-            task.info['question'] = u'Transcribe this!'
-            pbclient.update_task(task)
+        n_tasks = 0
+        offset = 0
+        limit = 100
+        tasks = pbclient.get_tasks(app.id,offset=offset,limit=limit)
+        while tasks:
+            for task in tasks:
+                print "Updating task: %s" % task.id
+                if ('n_answers' in task.info.keys()):
+                    del(task.info['n_answers'])
+                task.n_answers = int(options.update_tasks)
+                pbclient.update_task(task)
+                n_tasks += 1
+            offset = (offset + limit)
+            tasks = pbclient.get_tasks(app.id,offset=offset,limit=limit)
+        print "%s Tasks have been updated!" % n_tasks
 
     if not options.create_app and not options.update_template\
             and not options.add_more_tasks and not options.update_tasks:
