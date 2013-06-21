@@ -69,12 +69,25 @@ loaded without problems. Note: you can use .htaccess files too in order to not
 enable CORS to all your site, or if you prefer place the previous sentence in
 a Directory or Location, instead of at the level of the VirtualHost section.
 
+Documentation
+=============
+
+We recommend that you read the section: [Build with PyBossa](http://docs.pybossa.com/en/latest/build_with_pybossa.html) and follow the [step by step tutorial](http://docs.pybossa.com/en/latest/user/tutorial.html).
+
+**NOTE**: This application usses the [pybossa-client](https://pypi.python.org/pypi/pybossa-client) in order to simplify the development of the application and its usage. Check the [documentation](http://pythonhosted.org/pybossa-client/).
+
+
+LICENSE
+=======
+
+Please, see the COPYING file.
+
+
+
+
 Acknowledgments
 ===============
 
-The thumbnail has been created using a photo from [TempusVolat](http://www.flickr.com/photos/mrmorodo/8174824430/) (license CC
-BY-NC-SA 2.0). 
-Check the original photo here: http://www.flickr.com/photos/mrmorodo/8174824430/
+The thumbnail has been created using a [photo](http://www.flickr.com/photos/mrmorodo/8174824430/) from TempusVolat (license CC BY-NC-SA 2.0). 
 
-Special thanks to [Miquel Herrera for his JS libraries for the canvas
-scrolling](http://hitconsultants.com/dragscroll_scrollsync/scrollpane.html).
+Special thanks to [Miquel Herrera for his JS libraries for the canvas scrolling](http://hitconsultants.com/dragscroll_scrollsync/scrollpane.html), and [Mozilla Foundation](http://mozilla.github.io/pdf.js/) for their PDF.JS library.
