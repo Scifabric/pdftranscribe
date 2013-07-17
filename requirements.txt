@@ -1,1 +1,1 @@
-pybossa-client==0.3.1
+pybossa-client
