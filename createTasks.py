@@ -159,6 +159,9 @@ if __name__ == "__main__":
     else:
         if options.add_more_tasks:
             try:
+                response = pbclient.find_app(short_name=app_config['short_name'])
+                check_api_error(response)
+                app = response[0]
                 for page in range(1, options.pdf_pages + 1):
                     # Data for the tasks
                     task_info = dict(question="Transcribe the following page",
