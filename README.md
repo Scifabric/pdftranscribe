@@ -23,7 +23,7 @@ Re-using the application for your project
 You need to install the pybossa-client first (use a virtualenv):
 
 ```bash
-    $ pip install pybossa-client
+    $ pip install -r requirements.txt
 ```
 Then, you can follow the next steps:
 

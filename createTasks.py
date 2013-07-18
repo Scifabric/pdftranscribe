@@ -19,6 +19,26 @@
 from optparse import OptionParser
 import pbclient
 import json
+import logging
+from requests import exceptions
+
+
+def check_api_error(api_response):
+    """Check if returned API response contains an error"""
+    if type(api_response) == dict and (api_response.get('status') == 'failed'):
+        raise exceptions.HTTPError
+
+
+def format_error(module, error):
+    """Format the error for the given module"""
+    logging.error(module)
+    # Beautify JSON error
+    if type(error) == list:
+        print "Application not found"
+    else:
+        print json.dumps(error, sort_keys=True, indent=4, separators=(',', ': '))
+    exit(1)
+
 
 if __name__ == "__main__":
     # Arguments for the application
@@ -113,57 +133,91 @@ if __name__ == "__main__":
         options.n_answers = 100
 
     if options.create_app:
-        pbclient.create_app(app_config['name'],
-                app_config['short_name'],
-                app_config['description'])
-        app = pbclient.find_app(short_name=app_config['short_name'])[0]
-        app.long_description = open('long_description.html').read()
-        app.info['task_presenter'] = open('template.html').read()
-        app.info['thumbnail'] = app_config['thumbnail']
+        try:
+            response = pbclient.create_app(app_config['name'],
+                                           app_config['short_name'],
+                                           app_config['description'])
+            check_api_error(response)
+            app = pbclient.find_app(short_name=app_config['short_name'])[0]
+            app.long_description = open('long_description.html').read()
+            app.info['task_presenter'] = open('template.html').read()
+            app.info['thumbnail'] = app_config['thumbnail']
+        except:
+            format_error("pbclient.create_app", response)
 
-
-        pbclient.update_app(app)
-        for page in range(1,15):
-            # Data for the tasks
-            task_info = dict(question=app_config['question'],
-                        page=page,
-                        pdf_url=options.pdf_url)
-            pbclient.create_task(app.id, task_info)
+        try:
+            response = pbclient.update_app(app)
+            check_api_error(response)
+            for page in range(1, 15):
+                # Data for the tasks
+                task_info = dict(question=app_config['question'],
+                                 page=page,
+                                 pdf_url=options.pdf_url)
+                response = pbclient.create_task(app.id, task_info)
+                check_api_error(response)
+        except:
+            format_error("pbclient.update_app or pbclient.create_task", response)
 
     else:
         if options.add_more_tasks:
-            for page in range(1,options.pdf_pages + 1):
-                # Data for the tasks
-                task_info = dict(question="Transcribe the following page",
-                            page=page,
-                            pdf_url=options.pdf_url)
-                pbclient.create_task(app.id, task_info)
+            try:
+                for page in range(1, options.pdf_pages + 1):
+                    # Data for the tasks
+                    task_info = dict(question="Transcribe the following page",
+                                     page=page,
+                                     pdf_url=options.pdf_url)
+                    response = pbclient.create_task(app.id, task_info)
+                    check_api_error(response)
+            except:
+                format_error("pbclient.create_task", response)
 
     if options.update_template:
         print "Updating app template"
-        app = pbclient.find_app(short_name=app_config['short_name'])[0]
-        app.long_description = open('long_description.html').read()
-        app.info['task_presenter'] = open('template.html').read()
-        app.info['tutorial'] = open('tutorial.html').read()
-        pbclient.update_app(app)
+        try:
+            response = pbclient.find_app(short_name=app_config['short_name'])[0]
+            check_api_error(response)
+            app = response
+            app.long_description = open('long_description.html').read()
+            app.info['task_presenter'] = open('template.html').read()
+            app.info['tutorial'] = open('tutorial.html').read()
+            response = pbclient.update_app(app)
+            check_api_error(response)
+        except:
+            format_error("pbclient.find_app or pbclient.update_app", response)
 
     if options.update_tasks:
         print "Updating task question"
-        app = pbclient.find_app(short_name=app_config['short_name'])[0]
+        try:
+            app = pbclient.find_app(short_name=app_config['short_name'])[0]
+            check_api_error(app)
+        except:
+            format_error("pbclient.find_app", app)
         n_tasks = 0
         offset = 0
         limit = 100
-        tasks = pbclient.get_tasks(app.id,offset=offset,limit=limit)
+        try:
+            tasks = pbclient.get_tasks(app.id, offset=offset, limit=limit)
+            check_api_error(tasks)
+        except:
+            format_error("pbclient.get_tasks", tasks)
         while tasks:
             for task in tasks:
                 print "Updating task: %s" % task.id
                 if ('n_answers' in task.info.keys()):
                     del(task.info['n_answers'])
                 task.n_answers = int(options.update_tasks)
-                pbclient.update_task(task)
-                n_tasks += 1
+                try:
+                    response = pbclient.update_task(task)
+                    check_api_error(response)
+                    n_tasks += 1
+                except:
+                    format_error("pbclient.update_task", response)
             offset = (offset + limit)
-            tasks = pbclient.get_tasks(app.id,offset=offset,limit=limit)
+            try:
+                tasks = pbclient.get_tasks(app.id, offset=offset, limit=limit)
+                check_api_error(tasks)
+            except:
+                format_error("pbclient.get_tasks", tasks)
         print "%s Tasks have been updated!" % n_tasks
 
     if not options.create_app and not options.update_template\
