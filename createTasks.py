@@ -72,28 +72,24 @@ if __name__ == "__main__":
     parser.add_option("-u", "--update-template", action="store_true",
                       dest="update_template",
                       help="Update Tasks template",
-                      metavar="UPDATE-TEMPLATE"
-                     )
+                      metavar="UPDATE-TEMPLATE")
 
     # Update tasks question
     parser.add_option("-q", "--update-tasks",
                       dest="update_tasks",
                       help="Update Tasks n_answers",
-                      metavar="UPDATE-TASKS"
-                     )
+                      metavar="UPDATE-TASKS")
 
     parser.add_option("-x", "--extra-task", action="store_true",
                       dest="add_more_tasks",
                       help="Add more tasks",
-                      metavar="ADD-MORE-TASKS"
-                      )
+                      metavar="ADD-MORE-TASKS")
     # Modify the number of TaskRuns per Task
     # (default 30)
     parser.add_option("-n", "--number-answers",
                       dest="n_answers",
                       help="Number of answers per task",
-                      metavar="N-ANSWERS"
-                     )
+                      metavar="N-ANSWERS")
 
     parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
     (options, args) = parser.parse_args()
@@ -118,7 +114,7 @@ if __name__ == "__main__":
         pbclient.set('api_key', options.api_key)
 
     if not options.pdf_url:
-        options.pdf_url='http://cdn.mozilla.net/pdfjs/tracemonkey.pdf'
+        options.pdf_url = 'http://cdn.mozilla.net/pdfjs/tracemonkey.pdf'
         print("Using default PDF file from Mozilla")
 
     if not options.pdf_pages:
