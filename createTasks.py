@@ -134,7 +134,9 @@ if __name__ == "__main__":
                                            app_config['short_name'],
                                            app_config['description'])
             check_api_error(response)
-            app = pbclient.find_app(short_name=app_config['short_name'])[0]
+            response = pbclient.find_app(short_name=app_config['short_name'])
+            check_api_error(response)
+            app = response[0]
             app.long_description = open('long_description.html').read()
             app.info['task_presenter'] = open('template.html').read()
             app.info['thumbnail'] = app_config['thumbnail']
@@ -170,9 +172,9 @@ if __name__ == "__main__":
     if options.update_template:
         print "Updating app template"
         try:
-            response = pbclient.find_app(short_name=app_config['short_name'])[0]
+            response = pbclient.find_app(short_name=app_config['short_name'])
             check_api_error(response)
-            app = response
+            app = response[0]
             app.long_description = open('long_description.html').read()
             app.info['task_presenter'] = open('template.html').read()
             app.info['tutorial'] = open('tutorial.html').read()
@@ -184,8 +186,9 @@ if __name__ == "__main__":
     if options.update_tasks:
         print "Updating task question"
         try:
-            app = pbclient.find_app(short_name=app_config['short_name'])[0]
-            check_api_error(app)
+            response = pbclient.find_app(short_name=app_config['short_name'])
+            check_api_error(response)
+            app = response[0]
         except:
             format_error("pbclient.find_app", app)
         n_tasks = 0
