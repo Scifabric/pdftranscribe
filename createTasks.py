@@ -137,9 +137,8 @@ if __name__ == "__main__":
             response = pbclient.find_app(short_name=app_config['short_name'])
             check_api_error(response)
             app = response[0]
-            app.long_description = open('long_description.html').read()
+            app.long_description = open('long_description.md').read()
             app.info['task_presenter'] = open('template.html').read()
-            app.info['thumbnail'] = app_config['thumbnail']
         except:
             format_error("pbclient.create_app", response)
 
