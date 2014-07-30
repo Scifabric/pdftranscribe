@@ -220,7 +220,7 @@ pybossa.presentTask(function(task, deferred){
             $("#loading").hide();
             $(".btn-zoom").off('click').on('click', function(evt){
                 console.log($(evt.target).attr("value"));
-                zoom(task, parseInt($(evt.target).attr("value")));
+                zoom(task, parseInt($(evt.target).attr("value") || $(evt.target).parent().attr("value")));
             });
             $(".btn-submit").off('click').on('click', function(){
                 var answer = $("textarea#text").val();
