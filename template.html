@@ -44,16 +44,19 @@
 
 <div class="row skeleton" style="">
       <!-- Answer buttons -->
-      <div id="answer" class="col-md-8" style="text-align:center;">
-          <div class="btn-group" style="padding-bottom:5px;">
-          <button class="btn btn-default btn-zoom" value=0><i class="fa fa-undo"></i></button>
-          <button class="btn btn-default btn-zoom" value=1><i class="fa fa-search-plus"></i></button>
-          <button class="btn btn-default btn-zoom" value=-1><i class="fa fa-search-minus"></i></button>
-          </div>
-          <!--<div id="viewport" style="width:620px;height:755px;overflow:auto;">
-              <canvas id="the-canvas"></canvas>
-          </div>-->
-     </div>
+    <div id="answer" class="col-md-8" style="text-align:center;">
+        <div class="btn-group-md" style="padding-bottom:5px;">
+        <button id="prev" class="btn btn-primary btn-navigate disabled" value="prev"><i class="fa fa-arrow-left"></i></button>
+        <button class="btn btn-primary btn-zoom" value=0>1:1</button>
+        <button class="btn btn-primary btn-zoom" value=1><i class="fa fa-search-plus"></i></button>
+        <button class="btn btn-primary btn-zoom" value=-1><i class="fa fa-search-minus"></i></button>
+        <button id="next" class="btn btn-primary btn-navigate" value="next"><i class="fa fa-arrow-right"></i></button>
+        </div>
+        <div style="margin-top:2%;">
+          <p>Page <span id="currentPage">#</span> of <span id="totalPages">#</p>
+        </div>
+        <!-- <div id="viewport" style="margin-top:5%;"></div> -->
+    </div>
   <div id="question" class="col-md-4">
       <p>You are working now on task: <span id="task-id" class="label label-warning">#</span></p>
       <p>You have completed: <span id="done" class="label label-info"></span> tasks from
@@ -139,6 +142,21 @@ function zoom(task, v) {
 
 }
 
+function enableDisabledNavButtons(task){
+    if (task.pageNum === 1) {
+        $("#next").removeClass("disabled");
+        $("#prev").addClass("disabled");
+    }
+    else if (task.pageNum === task.pdfDoc.numPages) {
+        $("#prev").removeClass("disabled");
+        $("#next").addClass("disabled");
+    }
+    else {
+        $("#next").removeClass("disabled");
+        $("#prev").removeClass("disabled");
+    }
+}
+
 //
 // Go to previous page
 //
@@ -147,6 +165,8 @@ function goPrevious(task) {
     return;
   task.pageNum--;
   renderPage(task);
+  $("#currentPage").text(task.pageNum);
+  enableDisabledNavButtons(task);
 }
 
 //
@@ -157,6 +177,8 @@ function goNext(task) {
     return;
   task.pageNum++;
   renderPage(task);
+  $("#currentPage").text(task.pageNum);
+  enableDisabledNavButtons(task);
 }
 
 function loadUserProgress() {
@@ -184,8 +206,8 @@ pybossa.taskLoaded(function(task, deferred){
         var canvas = $("<canvas/>", {"id": "canvas_" + task.id});
         canvas.css("border", "1px solid black");
         var viewport = $("<div/>", {"id": "viewport_" + task.id});
-        viewport.css("width",  "620px");
-        viewport.css("height", "755px");
+        viewport.css("width",  "100%");
+        viewport.css("height", "100%");
         viewport.css("overflow", "auto");
         viewport.css("display", "none");
         viewport.append(canvas);
@@ -198,8 +220,8 @@ pybossa.taskLoaded(function(task, deferred){
         task.pageNum = task.info.page;
 
         PDFJS.getDocument(task.info.pdf_url).then(function getPdfHelloWorld(_pdfDoc) {
-          task.pdfDoc = _pdfDoc;
-          deferred.resolve(task);
+            task.pdfDoc = _pdfDoc;
+            deferred.resolve(task);
         });
     }
     else {
@@ -212,12 +234,25 @@ pybossa.presentTask(function(task, deferred){
     if ( !$.isEmptyObject(task) ) {
             loadUserProgress();
             $("#viewport_" + task.id).show();
+            $("#currentPage").text(task.pageNum);
+            $("#totalPages").text(task.pdfDoc.numPages);
             renderPage(task);
             $("#question h1").text(task.info.question);
             $("#task-id").text(task.id);
             $("#loading").hide();
+            enableDisabledNavButtons(task);
             $(".btn-zoom").off('click').on('click', function(evt){
                 zoom(task, parseInt($(this).attr("value")));
+            });
+            $(".btn-navigate").off('click').on('click', function(evt){
+                if ($(this).attr("value") === "next") {
+                    goNext(task);
+                    return;
+                }
+                if ($(this).attr("value") === "prev") {
+                    goPrevious(task);
+                    return;
+                }
             });
             $(".btn-submit").off('click').on('click', function(){
                 var answer = $("textarea#text").val();

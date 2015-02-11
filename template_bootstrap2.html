@@ -45,11 +45,16 @@
 <div class="row skeleton" style="">
       <!-- Answer buttons -->
       <div id="answer" class="span8" style="text-align:center;">
-          <div class="btn-group" style="padding-bottom:5px;">
-          <button class="btn btn-zoom" value=0><i class="icon icon-white icon-undo"></i></button>
+        <div class="btn-group" style="padding-bottom:5px;">
+          <button id="prev" class="btn btn-navigate disabled" value="prev"><i class="icon-arrow-left"></i></button>
+          <button class="btn btn-zoom" value=0>1:1</button>
           <button class="btn btn-zoom" value=1><i class="icon icon-white icon-zoom-in"></i></button>
           <button class="btn btn-zoom" value=-1><i class="icon icon-white icon-zoom-out"></i></button>
-          </div>
+          <button id="next" class="btn btn-navigate" value="next"><i class="icon-arrow-right"></i></button>
+        </div>
+        <div style="margin-top:2%;">
+          <p>Page <span id="currentPage">#</span> of <span id="totalPages">#</p>
+        </div>
           <!--<div id="viewport" style="width:620px;height:755px;overflow:auto;">
               <canvas id="the-canvas"></canvas>
           </div>-->
@@ -139,6 +144,21 @@ function zoom(task, v) {
 
 }
 
+function enableDisabledNavButtons(task){
+    if (task.pageNum === 1) {
+        $("#next").removeClass("disabled");
+        $("#prev").addClass("disabled");
+    }
+    else if (task.pageNum === task.pdfDoc.numPages) {
+        $("#prev").removeClass("disabled");
+        $("#next").addClass("disabled");
+    }
+    else {
+        $("#next").removeClass("disabled");
+        $("#prev").removeClass("disabled");
+    }
+}
+
 //
 // Go to previous page
 //
@@ -147,6 +167,8 @@ function goPrevious(task) {
     return;
   task.pageNum--;
   renderPage(task);
+  $("#currentPage").text(task.pageNum);
+  enableDisabledNavButtons(task);
 }
 
 //
@@ -157,6 +179,8 @@ function goNext(task) {
     return;
   task.pageNum++;
   renderPage(task);
+  $("#currentPage").text(task.pageNum);
+  enableDisabledNavButtons(task);
 }
 
 function loadUserProgress() {
@@ -198,8 +222,8 @@ pybossa.taskLoaded(function(task, deferred){
         task.pageNum = task.info.page;
 
         PDFJS.getDocument(task.info.pdf_url).then(function getPdfHelloWorld(_pdfDoc) {
-          task.pdfDoc = _pdfDoc;
-          deferred.resolve(task);
+            task.pdfDoc = _pdfDoc;
+            deferred.resolve(task);
         });
     }
     else {
@@ -212,13 +236,25 @@ pybossa.presentTask(function(task, deferred){
     if ( !$.isEmptyObject(task) ) {
             loadUserProgress();
             $("#viewport_" + task.id).show();
+            $("#currentPage").text(task.pageNum);
+            $("#totalPages").text(task.pdfDoc.numPages);
             renderPage(task);
             $("#question h1").text(task.info.question);
             $("#task-id").text(task.id);
             $("#loading").hide();
+            enableDisabledNavButtons(task);
             $(".btn-zoom").off('click').on('click', function(evt){
-                console.log($(evt.target).attr("value"));
                 zoom(task, parseInt($(this).attr("value")));
+            });
+            $(".btn-navigate").off('click').on('click', function(evt){
+                if ($(this).attr("value") === "next") {
+                    goNext(task);
+                    return;
+                }
+                if ($(this).attr("value") === "prev") {
+                    goPrevious(task);
+                    return;
+                }
             });
             $(".btn-submit").off('click').on('click', function(){
                 var answer = $("textarea#text").val();
