@@ -231,41 +231,42 @@ pybossa.taskLoaded(function(task, deferred){
 
 pybossa.presentTask(function(task, deferred){
     if ( !$.isEmptyObject(task) ) {
-            loadUserProgress();
-            $("#viewport_" + task.id).show();
-            $("#currentPage").text(task.pageNum);
-            $("#totalPages").text(task.pdfDoc.numPages);
-            renderPage(task);
-            $("#question h1").text(task.info.question);
-            $("#task-id").text(task.id);
-            $("#loading").hide();
-            enableDisabledNavButtons(task);
-            $(".btn-zoom").off('click').on('click', function(evt){
-                zoom(task, parseInt($(this).attr("value")));
-            });
-            $(".btn-navigate").off('click').on('click', function(evt){
-                if ($(this).attr("value") === "next") {
-                    goNext(task);
-                    return;
-                }
-                if ($(this).attr("value") === "prev") {
-                    goPrevious(task);
-                    return;
-                }
-            });
-            $(".btn-submit").off('click').on('click', function(){
-                var answer = $("textarea#text").val();
-                $("#viewport_" + task.id).hide();
-                pybossa.saveTask(task.id, answer).done(function(data){
-                    deferred.resolve();
-                    $("#success").fadeIn();
-                    setTimeout(function() { $("#success").fadeOut() }, 2000);
-                })
-            });
+        loadUserProgress();
+        $("textarea#text").val('');
+        $("#viewport_" + task.id).show();
+        $("#currentPage").text(task.pageNum);
+        $("#totalPages").text(task.pdfDoc.numPages);
+        renderPage(task);
+        $("#question h1").text(task.info.question);
+        $("#task-id").text(task.id);
+        $("#loading").hide();
+        enableDisabledNavButtons(task);
+        $(".btn-zoom").off('click').on('click', function(evt){
+            zoom(task, parseInt($(this).attr("value")));
+        });
+        $(".btn-navigate").off('click').on('click', function(evt){
+            if ($(this).attr("value") === "next") {
+                goNext(task);
+                return;
+            }
+            if ($(this).attr("value") === "prev") {
+                goPrevious(task);
+                return;
+            }
+        });
+        $(".btn-submit").off('click').on('click', function(){
+            var answer = $("textarea#text").val();
+            $("#viewport_" + task.id).hide();
+            pybossa.saveTask(task.id, answer).done(function(data){
+                deferred.resolve();
+                $("#success").fadeIn();
+                setTimeout(function() { $("#success").fadeOut() }, 2000);
+            })
+        });
     }
     else {
-            $(".skeleton").hide();
-            $("#finish").fadeIn();
+        $(".skeleton").hide();
+        $("#finish").fadeIn();
     }
 });
 
