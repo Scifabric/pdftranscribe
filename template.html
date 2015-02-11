@@ -203,8 +203,6 @@ pybossa.taskLoaded(function(task, deferred){
         });
     }
     else {
-        $(".skeleton").hide();
-        $("#finish").fadeIn();
         deferred.resolve(task);
     }
 
