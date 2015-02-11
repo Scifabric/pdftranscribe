@@ -52,7 +52,7 @@
           <button class="btn btn-zoom" value=-1><i class="icon icon-white icon-zoom-out"></i></button>
           <button id="next" class="btn btn-navigate" value="next"><i class="icon-arrow-right"></i></button>
         </div>
-        <div style="margin-top:2%;">
+        <div id="pages" style="margin-top:2%;">
           <p>Page <span id="currentPage">#</span> of <span id="totalPages">#</p>
         </div>
      </div>
@@ -109,7 +109,6 @@ function renderPage(task) {
 }
 
 function zoom(task, v) {
-
     task.pdfDoc.getPage(task.pageNum).then(function(page){
         if (v==1) {
             task.scale = task.scale + 0.1;
@@ -129,7 +128,6 @@ function zoom(task, v) {
         var viewport = page.getViewport(task.scale + 0.1);
         task.canvas.height = viewport.height;
         task.canvas.width = viewport.width;
-
 
         // Render PDF page into canvas context
         var renderContext = {
@@ -191,6 +189,19 @@ function loadUserProgress() {
     });
 }
 
+function showPaginationOptions(task) {
+    if (task.pagination) {
+        $("#currentPage").text(task.pageNum);
+        $("#totalPages").text(task.pdfDoc.numPages);
+        $(".btn-navigate").show();
+        $("#pages").show();
+    }
+    else {
+        $(".btn-navigate").hide();
+        $("#pages").hide();
+    }
+}
+
 pybossa.taskLoaded(function(task, deferred){
     if ( !$.isEmptyObject(task) ) {
         if (task.state=='completed') {
@@ -216,7 +227,8 @@ pybossa.taskLoaded(function(task, deferred){
         task.canvas = document.getElementById('canvas_' + task.id);
         task.ctx = document.getElementById("canvas_" + task.id).getContext('2d');
         task.scale = 0.9;
-        task.pageNum = task.info.page;
+        task.pagination = (task.info.page === undefined);
+        task.pageNum = task.info.page || 1;
 
         PDFJS.getDocument(task.info.pdf_url).then(function getPdfHelloWorld(_pdfDoc) {
             task.pdfDoc = _pdfDoc;
@@ -234,8 +246,7 @@ pybossa.presentTask(function(task, deferred){
         loadUserProgress();
         $("textarea#text").val('');
         $("#viewport_" + task.id).show();
-        $("#currentPage").text(task.pageNum);
-        $("#totalPages").text(task.pdfDoc.numPages);
+        showPaginationOptions(task);
         renderPage(task);
         $("#question h1").text(task.info.question);
         $("#task-id").text(task.id);
