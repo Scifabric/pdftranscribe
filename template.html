@@ -44,16 +44,18 @@
 
 <div class="row skeleton" style="">
       <!-- Answer buttons -->
-      <div id="answer" class="col-md-8" style="text-align:center;">
-          <div class="btn-group" style="padding-bottom:5px;">
-          <button class="btn btn-default btn-zoom" value=0><i class="fa fa-undo"></i></button>
-          <button class="btn btn-default btn-zoom" value=1><i class="fa fa-search-plus"></i></button>
-          <button class="btn btn-default btn-zoom" value=-1><i class="fa fa-search-minus"></i></button>
-          </div>
-          <!--<div id="viewport" style="width:620px;height:755px;overflow:auto;">
-              <canvas id="the-canvas"></canvas>
-          </div>-->
-     </div>
+    <div id="answer" class="col-md-8" style="text-align:center;">
+        <div class="btn-group-md" style="padding-bottom:5px;">
+        <button id="prev" class="btn btn-primary btn-navigate disabled" value="prev"><i class="fa fa-arrow-left"></i></button>
+        <button class="btn btn-primary btn-zoom" value=0>1:1</button>
+        <button class="btn btn-primary btn-zoom" value=1><i class="fa fa-search-plus"></i></button>
+        <button class="btn btn-primary btn-zoom" value=-1><i class="fa fa-search-minus"></i></button>
+        <button id="next" class="btn btn-primary btn-navigate" value="next"><i class="fa fa-arrow-right"></i></button>
+        </div>
+        <div id="pages" style="margin-top:2%;">
+          <p>Page <span id="currentPage">#</span> of <span id="totalPages">#</p>
+        </div>
+    </div>
   <div id="question" class="col-md-4">
       <p>You are working now on task: <span id="task-id" class="label label-warning">#</span></p>
       <p>You have completed: <span id="done" class="label label-info"></span> tasks from
@@ -69,9 +71,8 @@
           <button class="btn btn-submit">Submit transcription!</button>
       </div>
   </div>
-
-
 </div>
+
 <script src="http://code.jquery.com/ui/1.9.1/jquery-ui.js"></script>
 <script src="http://hitconsultants.com/dragscroll_scrollsync/scrollsync.js"></script>
 <script src="http://hitconsultants.com/dragscroll_scrollsync/dragscrollable.js"></script>
@@ -107,7 +108,6 @@ function renderPage(task) {
 }
 
 function zoom(task, v) {
-
     task.pdfDoc.getPage(task.pageNum).then(function(page){
         if (v==1) {
             task.scale = task.scale + 0.1;
@@ -128,7 +128,6 @@ function zoom(task, v) {
         task.canvas.height = viewport.height;
         task.canvas.width = viewport.width;
 
-
         // Render PDF page into canvas context
         var renderContext = {
           canvasContext: task.ctx,
@@ -139,6 +138,21 @@ function zoom(task, v) {
 
 }
 
+function enableDisabledNavButtons(task){
+    if (task.pageNum === 1) {
+        $("#next").removeClass("disabled");
+        $("#prev").addClass("disabled");
+    }
+    else if (task.pageNum === task.pdfDoc.numPages) {
+        $("#prev").removeClass("disabled");
+        $("#next").addClass("disabled");
+    }
+    else {
+        $("#next").removeClass("disabled");
+        $("#prev").removeClass("disabled");
+    }
+}
+
 //
 // Go to previous page
 //
@@ -147,6 +161,8 @@ function goPrevious(task) {
     return;
   task.pageNum--;
   renderPage(task);
+  $("#currentPage").text(task.pageNum);
+  enableDisabledNavButtons(task);
 }
 
 //
@@ -157,6 +173,8 @@ function goNext(task) {
     return;
   task.pageNum++;
   renderPage(task);
+  $("#currentPage").text(task.pageNum);
+  enableDisabledNavButtons(task);
 }
 
 function loadUserProgress() {
@@ -168,6 +186,19 @@ function loadUserProgress() {
         $("#total").text(data.total);
         $("#done").text(data.done);
     });
+}
+
+function showPaginationOptions(task) {
+    if (task.pagination) {
+        $("#currentPage").text(task.pageNum);
+        $("#totalPages").text(task.pdfDoc.numPages);
+        $(".btn-navigate").show();
+        $("#pages").show();
+    }
+    else {
+        $(".btn-navigate").hide();
+        $("#pages").hide();
+    }
 }
 
 pybossa.taskLoaded(function(task, deferred){
@@ -184,8 +215,8 @@ pybossa.taskLoaded(function(task, deferred){
         var canvas = $("<canvas/>", {"id": "canvas_" + task.id});
         canvas.css("border", "1px solid black");
         var viewport = $("<div/>", {"id": "viewport_" + task.id});
-        viewport.css("width",  "620px");
-        viewport.css("height", "755px");
+        viewport.css("width",  "100%");
+        viewport.css("height", "100%");
         viewport.css("overflow", "auto");
         viewport.css("display", "none");
         viewport.append(canvas);
@@ -195,16 +226,15 @@ pybossa.taskLoaded(function(task, deferred){
         task.canvas = document.getElementById('canvas_' + task.id);
         task.ctx = document.getElementById("canvas_" + task.id).getContext('2d');
         task.scale = 0.9;
-        task.pageNum = task.info.page;
+        task.pagination = (task.info.page === undefined);
+        task.pageNum = task.info.page || 1;
 
         PDFJS.getDocument(task.info.pdf_url).then(function getPdfHelloWorld(_pdfDoc) {
-          task.pdfDoc = _pdfDoc;
-          deferred.resolve(task);
+            task.pdfDoc = _pdfDoc;
+            deferred.resolve(task);
         });
     }
     else {
-        $(".skeleton").hide();
-        $("#finish").fadeIn();
         deferred.resolve(task);
     }
 
@@ -212,28 +242,41 @@ pybossa.taskLoaded(function(task, deferred){
 
 pybossa.presentTask(function(task, deferred){
     if ( !$.isEmptyObject(task) ) {
-            loadUserProgress();
-            $("#viewport_" + task.id).show();
-            renderPage(task);
-            $("#question h1").text(task.info.question);
-            $("#task-id").text(task.id);
-            $("#loading").hide();
-            $(".btn-zoom").off('click').on('click', function(evt){
-                zoom(task, parseInt($(this).attr("value")));
-            });
-            $(".btn-submit").off('click').on('click', function(){
-                var answer = $("textarea#text").val();
-                $("#viewport_" + task.id).hide();
-                pybossa.saveTask(task.id, answer).done(function(data){
-                    deferred.resolve();
-                    $("#success").fadeIn();
-                    setTimeout(function() { $("#success").fadeOut() }, 2000);
-                })
-            });
+        loadUserProgress();
+        $("textarea#text").val('');
+        $("#viewport_" + task.id).show();
+        showPaginationOptions(task);
+        renderPage(task);
+        $("#question h1").text(task.info.question);
+        $("#task-id").text(task.id);
+        $("#loading").hide();
+        enableDisabledNavButtons(task);
+        $(".btn-zoom").off('click').on('click', function(evt){
+            zoom(task, parseInt($(this).attr("value")));
+        });
+        $(".btn-navigate").off('click').on('click', function(evt){
+            if ($(this).attr("value") === "next") {
+                goNext(task);
+                return;
+            }
+            if ($(this).attr("value") === "prev") {
+                goPrevious(task);
+                return;
+            }
+        });
+        $(".btn-submit").off('click').on('click', function(){
+            var answer = $("textarea#text").val();
+            $("#viewport_" + task.id).hide();
+            pybossa.saveTask(task.id, answer).done(function(data){
+                deferred.resolve();
+                $("#success").fadeIn();
+                setTimeout(function() { $("#success").fadeOut() }, 2000);
+            })
+        });
     }
     else {
-            $(".skeleton").hide();
-            $("#finish").fadeIn();
+        $(".skeleton").hide();
+        $("#finish").fadeIn();
     }
 });
 

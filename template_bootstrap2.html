@@ -24,7 +24,7 @@
 <br/>
 <div class="alert-actions">
     <a class="btn small" href="/">Go back</a>
-    <a class="btn small" href="/app">or, Check other applications</a>
+    <a class="btn small" href="/app">or, Check other projects</a>
 </div>
     </div>
     <div id="error" class="alert alert-error" style="display:none;">
@@ -37,7 +37,7 @@
 <div class="row skeleton">
     <div id="question" class="span12">
       <h1>Question</h1>
-      <span class="label label-info"><i class="icon icon-bullhorn"></i> Important</span> <strong>This is just a demo application. You can re-use the code to create your own application.</strong>
+      <span class="label label-info"><i class="icon icon-bullhorn"></i> Important</span> <strong>This is just a demo project. You can re-use the code to create your own project.</strong>
       <hr>
     </div>
 </div>
@@ -45,14 +45,16 @@
 <div class="row skeleton" style="">
       <!-- Answer buttons -->
       <div id="answer" class="span8" style="text-align:center;">
-          <div class="btn-group" style="padding-bottom:5px;">
-          <button class="btn btn-zoom" value=0><i class="icon icon-white icon-undo"></i></button>
+        <div class="btn-group" style="padding-bottom:5px;">
+          <button id="prev" class="btn btn-navigate disabled" value="prev"><i class="icon-arrow-left"></i></button>
+          <button class="btn btn-zoom" value=0>1:1</button>
           <button class="btn btn-zoom" value=1><i class="icon icon-white icon-zoom-in"></i></button>
           <button class="btn btn-zoom" value=-1><i class="icon icon-white icon-zoom-out"></i></button>
-          </div>
-          <!--<div id="viewport" style="width:620px;height:755px;overflow:auto;">
-              <canvas id="the-canvas"></canvas>
-          </div>-->
+          <button id="next" class="btn btn-navigate" value="next"><i class="icon-arrow-right"></i></button>
+        </div>
+        <div id="pages" style="margin-top:2%;">
+          <p>Page <span id="currentPage">#</span> of <span id="totalPages">#</p>
+        </div>
      </div>
   <div id="question" class="span4">
       <p>You are working now on task: <span id="task-id" class="label label-warning">#</span></p>
@@ -69,9 +71,8 @@
           <button class="btn btn-submit">Submit transcription!</button>
       </div>
   </div>
-
-
 </div>
+
 <script src="http://code.jquery.com/ui/1.9.1/jquery-ui.js"></script>
 <script src="http://hitconsultants.com/dragscroll_scrollsync/scrollsync.js"></script>
 <script src="http://hitconsultants.com/dragscroll_scrollsync/dragscrollable.js"></script>
@@ -107,7 +108,6 @@ function renderPage(task) {
 }
 
 function zoom(task, v) {
-
     task.pdfDoc.getPage(task.pageNum).then(function(page){
         if (v==1) {
             task.scale = task.scale + 0.1;
@@ -128,7 +128,6 @@ function zoom(task, v) {
         task.canvas.height = viewport.height;
         task.canvas.width = viewport.width;
 
-
         // Render PDF page into canvas context
         var renderContext = {
           canvasContext: task.ctx,
@@ -139,6 +138,21 @@ function zoom(task, v) {
 
 }
 
+function enableDisabledNavButtons(task){
+    if (task.pageNum === 1) {
+        $("#next").removeClass("disabled");
+        $("#prev").addClass("disabled");
+    }
+    else if (task.pageNum === task.pdfDoc.numPages) {
+        $("#prev").removeClass("disabled");
+        $("#next").addClass("disabled");
+    }
+    else {
+        $("#next").removeClass("disabled");
+        $("#prev").removeClass("disabled");
+    }
+}
+
 //
 // Go to previous page
 //
@@ -147,6 +161,8 @@ function goPrevious(task) {
     return;
   task.pageNum--;
   renderPage(task);
+  $("#currentPage").text(task.pageNum);
+  enableDisabledNavButtons(task);
 }
 
 //
@@ -157,6 +173,8 @@ function goNext(task) {
     return;
   task.pageNum++;
   renderPage(task);
+  $("#currentPage").text(task.pageNum);
+  enableDisabledNavButtons(task);
 }
 
 function loadUserProgress() {
@@ -168,6 +186,19 @@ function loadUserProgress() {
         $("#total").text(data.total);
         $("#done").text(data.done);
     });
+}
+
+function showPaginationOptions(task) {
+    if (task.pagination) {
+        $("#currentPage").text(task.pageNum);
+        $("#totalPages").text(task.pdfDoc.numPages);
+        $(".btn-navigate").show();
+        $("#pages").show();
+    }
+    else {
+        $(".btn-navigate").hide();
+        $("#pages").hide();
+    }
 }
 
 pybossa.taskLoaded(function(task, deferred){
@@ -195,16 +226,15 @@ pybossa.taskLoaded(function(task, deferred){
         task.canvas = document.getElementById('canvas_' + task.id);
         task.ctx = document.getElementById("canvas_" + task.id).getContext('2d');
         task.scale = 0.9;
-        task.pageNum = task.info.page;
+        task.pagination = (task.info.page === undefined);
+        task.pageNum = task.info.page || 1;
 
         PDFJS.getDocument(task.info.pdf_url).then(function getPdfHelloWorld(_pdfDoc) {
-          task.pdfDoc = _pdfDoc;
-          deferred.resolve(task);
+            task.pdfDoc = _pdfDoc;
+            deferred.resolve(task);
         });
     }
     else {
-        $(".skeleton").hide();
-        $("#finish").fadeIn();
         deferred.resolve(task);
     }
 
@@ -212,29 +242,41 @@ pybossa.taskLoaded(function(task, deferred){
 
 pybossa.presentTask(function(task, deferred){
     if ( !$.isEmptyObject(task) ) {
-            loadUserProgress();
-            $("#viewport_" + task.id).show();
-            renderPage(task);
-            $("#question h1").text(task.info.question);
-            $("#task-id").text(task.id);
-            $("#loading").hide();
-            $(".btn-zoom").off('click').on('click', function(evt){
-                console.log($(evt.target).attr("value"));
-                zoom(task, parseInt($(this).attr("value")));
-            });
-            $(".btn-submit").off('click').on('click', function(){
-                var answer = $("textarea#text").val();
-                $("#viewport_" + task.id).hide();
-                pybossa.saveTask(task.id, answer).done(function(data){
-                    deferred.resolve();
-                    $("#success").fadeIn();
-                    setTimeout(function() { $("#success").fadeOut() }, 2000);
-                })
-            });
+        loadUserProgress();
+        $("textarea#text").val('');
+        $("#viewport_" + task.id).show();
+        showPaginationOptions(task);
+        renderPage(task);
+        $("#question h1").text(task.info.question);
+        $("#task-id").text(task.id);
+        $("#loading").hide();
+        enableDisabledNavButtons(task);
+        $(".btn-zoom").off('click').on('click', function(evt){
+            zoom(task, parseInt($(this).attr("value")));
+        });
+        $(".btn-navigate").off('click').on('click', function(evt){
+            if ($(this).attr("value") === "next") {
+                goNext(task);
+                return;
+            }
+            if ($(this).attr("value") === "prev") {
+                goPrevious(task);
+                return;
+            }
+        });
+        $(".btn-submit").off('click').on('click', function(){
+            var answer = $("textarea#text").val();
+            $("#viewport_" + task.id).hide();
+            pybossa.saveTask(task.id, answer).done(function(data){
+                deferred.resolve();
+                $("#success").fadeIn();
+                setTimeout(function() { $("#success").fadeOut() }, 2000);
+            })
+        });
     }
     else {
-            $(".skeleton").hide();
-            $("#finish").fadeIn();
+        $(".skeleton").hide();
+        $("#finish").fadeIn();
     }
 });
 
