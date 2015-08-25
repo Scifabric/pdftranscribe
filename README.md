@@ -20,21 +20,87 @@ The provided script for creating the tasks is very simple: you only need to tell
 Re-using the project for your project
 =========================================
 
-You need to install the pybossa-client first (use a virtualenv):
+You need to install the pybossa-pbs library first. Use of a virtual environment
+is recommended:
+
+```bash
+    $ virtualenv env
+    $ source env/bin/activate
+```
 
 ```bash
     $ pip install -r requirements.txt
 ```
-Then, you can follow the next steps:
 
-*  Create an account in crowdcrafting.org 
-*  Copy under your account profile your API-KEY
-*  Run python createTasks.py -u http://crowdcrafting.org -k API-KEY -f http://domain/yourpdf -p numPages
-*  Open with your browser the Projects section and choose the PDF Transcribe project. This will open the presenter for this demo project.
+## Creating an account in a PyBossa server
+Now that you've all the requirements installed in your system, you need
+a PyBossa account:
 
-Please, check the full documentation here about how to create a project:
+*  Create an account in your PyBossa server (use [Crowdcrafting](https://crowdcrafting.org) if you want).
+*  Copy your API-KEY (you can find it in your profile page).
 
-http://docs.pybossa.com/en/latest/build_with_pybossa.html
+## Configure pybossa-pbs command line
+
+PyBossa-pbs command line tool can be configured with a config file in order to
+avoid typing the API-KEY and the server every time you want to take an action
+on your project. For this reason, we recommend you to actually create the
+config file. For creating the file, follow the next steps:
+
+```bash
+    $ cd ~
+    $ editorofyourchoice .pybossa.cfg
+```
+
+That will create a file. Now paste the following:
+
+```python
+[default]
+server: http://yourpybossaserver.com
+apikey: yourapikey
+``` 
+
+Save the file, and you are done! From now on, pybossa-pbs will always use the
+default section to run your commands.
+
+## Create the project
+
+Now that we've everything in place, creating the project is as simple as
+running this command:
+
+```bash
+    $ pbs create_project
+```
+
+## Adding tasks
+
+### Using a CSV or JSON file for adding tasks
+
+This is very simple too. There's a sample tasks CSV file included. You can adapt
+it to your own PDF files URLs, and then just let pbs do the job:
+
+```bash
+    $ pbs add_tasks --tasks-file pdf_tasks.csv
+```
+
+### Using the Dropbox importer (via web)
+
+You can also use the built-in Dropbox importer that comes with PyBossa servers
+(if configured by the admin). For more details, please visit the [PyBossa documentation](http://docs.pybossa.com/en/latest/user/overview.html?highlight=dropbox#importing-the-tasks-from-a-dropbox-account).
+
+## Finally, add the task presenter, tutorial and long description
+
+Now that we've some data to process, let's add to our project the required
+templates to show a better description of our project, to present the tasks to
+our users, and a small tutorial for the volunteers:
+
+```bash
+    $ pbs update_project
+```
+
+Please, check the full documentation here about how to create a project in the
+command line with pbs:
+
+http://docs.pybossa.com/en/latest/user/pbs.html
 
 Setting up your Apache web server for hosting the PDF files
 ===========================================================
@@ -69,12 +135,20 @@ loaded without problems. Note: you can use .htaccess files too in order to not
 enable CORS to all your site, or if you prefer place the previous sentence in
 a Directory or Location, instead of at the level of the VirtualHost section.
 
+Using Dropbox to host your PDF files
+====================================
+
+Alternatively, if you are using a PyBossa server configured to be integrated with
+Dropbox (like [Crowdcrafting](https://crowdcrafting.org)) you can use the built-in
+Dropbox importer to serve the PDF files directly from a Dropbox account. Check the
+[PyBossa docs](http://docs.pybossa.com/en/latest/user/overview.html?highlight=dropbox#importing-the-tasks-from-a-dropbox-account) for more details.
+
 Documentation
 =============
 
 We recommend that you read the section: [Build with PyBossa](http://docs.pybossa.com/en/latest/build_with_pybossa.html) and follow the [step by step tutorial](http://docs.pybossa.com/en/latest/user/tutorial.html).
 
-**NOTE**: This project uses the [pybossa-client](https://pypi.python.org/pypi/pybossa-client) in order to simplify the development of the project and its usage. Check the [documentation](http://pythonhosted.org/pybossa-client/).
+**NOTE**: This project uses the [pybossa-pbs](https://pypi.python.org/pypi/pybossa-pbs) library in order to simplify the development of the project and its usage. Check the [documentation](https://github.com/PyBossa/pbs).
 
 
 LICENSE
