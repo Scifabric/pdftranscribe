@@ -75,12 +75,20 @@ running this command:
 
 ### Using a CSV or JSON file for adding tasks
 
-This is very simple too. There's a sample tasks CSV file included. You can adapt
-it to your own PDF files URLs, and then just let pbs do the job:
+This is very simple too. There's a sample tasks CSV file included here named
+'pdf_tasks.csv'. You can adapt it to your own PDF files URLs, and then just let
+pbs do the job:
 
 ```bash
     $ pbs add_tasks --tasks-file pdf_tasks.csv
 ```
+
+But notice that it has 3 columns (or keys if you'd work with an equivalent JSON
+file) which are required by this template:
+- **pdf_url**: the url where the PDF file will be loaded from.
+- **question**: some text you want to display giving instructions on what the user needs to do.
+- **page**: an optional field that will make that only the specified page is displayed
+ if the PDF document has multiple pages. If omitted, the whole document will be shown (with a pagination).
 
 ### Using the Dropbox importer (via web)
 
