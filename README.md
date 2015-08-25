@@ -105,6 +105,9 @@ our users, and a small tutorial for the volunteers:
     $ pbs update_project
 ```
 
+**NOTE**: we provide templates also for Bootstrap v2 in case your PyBossa
+server is using Bootstrap 2 instead of Bootstrap 3. See the rest of the files.
+
 Please, check the full documentation here about how to create a project in the
 command line with pbs:
 
