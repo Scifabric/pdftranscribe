@@ -17,8 +17,8 @@ In this **simple demo project**, we **load a PDF file** in one side of the page,
 
 The provided script for creating the tasks is very simple: you only need to tell the script where is the PDF file hosted, the URL, and which pages you want to convert as tasks. By default, this demo explores the 14 pages of the example PDF file.
 
-Re-using the project for your project
-=========================================
+Re-using the project for your own one
+=====================================
 
 You need to install the pybossa-pbs library first. Use of a virtual environment
 is recommended:
