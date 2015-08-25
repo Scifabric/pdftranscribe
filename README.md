@@ -53,7 +53,7 @@ config file. For creating the file, follow the next steps:
 
 That will create a file. Now paste the following:
 
-```python
+```ini
 [default]
 server: http://yourpybossaserver.com
 apikey: yourapikey
