@@ -6,33 +6,31 @@
 
 <div class="row">
     <!-- Success and Error Messages for the user --> 
-    <!-- Question, task id, photo and action buttons for answering the question-->
     <div class="span6 offset2" style="height:50px">
         <div id="success" class="alert alert-success" style="display:none;">
             <a class="close">×</a>
-            <strong>Well done!</strong> Your answer has been saved</strong>
+            <strong>Well done! Your answer has been saved</strong>
+        </div>
+        <div id="taskcompleted" class="alert alert-info" style="display:none;">
+            <strong>The task has been completed! Thanks a lot!</strong>
+        </div>
+        <div id="loading" class="alert alert-info">
+            <strong>Loading the PDF file...</strong>
+        </div>
+        <div id="finish" class="alert alert-success" style="display:none;">
+            <strong>Congratulations! You have participated in all available tasks!</strong>
+            <br/>
+            <div class="alert-actions">
+                <a class="btn small" href="/">Go back</a>
+                <a class="btn small" href="/project">or, Check other projects</a>
+            </div>
+        </div>
+        <div id="error" class="alert alert-error" style="display:none;">
+            <a class="close">×</a>
+            <strong>Error! Something went wrong, please contact the site administrators</strong>
+        </div>
     </div>
-    <div id="taskcompleted" class="alert alert-info" style="display:none;">
-        <strong>The task has been completed!</strong> Thanks a lot!</strong>
-</div>
-    <div id="loading" class="alert alert-info">
-        <strong>Loading the PDF file...</strong>
-</div>
-
-<div id="finish" class="alert alert-success" style="display:none;">
-    <strong>Congratulations!</strong> You have participated in all available tasks!</strong>
-<br/>
-<div class="alert-actions">
-    <a class="btn small" href="/">Go back</a>
-    <a class="btn small" href="/app">or, Check other projects</a>
-</div>
-    </div>
-    <div id="error" class="alert alert-error" style="display:none;">
-<a class="close">×</a>
-<strong>Error!</strong> Something went wrong, please contact the site administrators</strong>
-    </div>
-  </div> <!-- End Success and Error Messages for the user -->
-</div>
+</div> <!-- End Success and Error Messages for the user -->
 
 <div class="row skeleton">
     <div id="question" class="span12">
@@ -42,35 +40,35 @@
     </div>
 </div>
 
-<div class="row skeleton" style="">
-      <!-- Answer buttons -->
-      <div id="answer" class="span8" style="text-align:center;">
+<div class="row skeleton">
+    <!-- Answer buttons -->
+    <div id="answer" class="span8" style="text-align:center;">
         <div class="btn-group" style="padding-bottom:5px;">
-          <button id="prev" class="btn btn-navigate disabled" value="prev"><i class="icon-arrow-left"></i></button>
-          <button class="btn btn-zoom" value=0>1:1</button>
-          <button class="btn btn-zoom" value=1><i class="icon icon-white icon-zoom-in"></i></button>
-          <button class="btn btn-zoom" value=-1><i class="icon icon-white icon-zoom-out"></i></button>
-          <button id="next" class="btn btn-navigate" value="next"><i class="icon-arrow-right"></i></button>
+            <button id="prev" class="btn btn-navigate disabled" value="prev"><i class="icon-arrow-left"></i></button>
+            <button class="btn btn-zoom" value=0>1:1</button>
+            <button class="btn btn-zoom" value=1><i class="icon icon-white icon-zoom-in"></i></button>
+            <button class="btn btn-zoom" value=-1><i class="icon icon-white icon-zoom-out"></i></button>
+            <button id="next" class="btn btn-navigate" value="next"><i class="icon-arrow-right"></i></button>
         </div>
         <div id="pages" style="margin-top:2%;">
-          <p>Page <span id="currentPage">#</span> of <span id="totalPages">#</p>
+          <p>Page <span id="currentPage">#</span> of <span id="totalPages">#</span></p>
         </div>
      </div>
-  <div class="span4">
-      <p>You are working now on task: <span id="task-id" class="label label-warning">#</span></p>
-      <p>You have completed: <span id="done" class="label label-info"></span> tasks from
-      <span id="total" class="label label-inverse"></span></p>
-      <div class="progress progress-striped">
-          <div id="progress" rel="tooltip" title="#" class="bar" style="width: 0%;"></div>
-      </div>
-      <div>
-          <h5>Write here the transcription</h5>
-          <form class="form-inline">
-              <textarea id="text" rows="10" style="width:100%;"></textarea>
-          </form>
-          <button class="btn btn-submit">Submit transcription!</button>
-      </div>
-  </div>
+    <div class="span4">
+        <p>You are working now on task: <span id="task-id" class="label label-warning">#</span></p>
+        <p>You have completed: <span id="done" class="label label-info"></span> tasks from
+        <span id="total" class="label label-inverse"></span></p>
+        <div class="progress progress-striped">
+            <div id="progress" rel="tooltip" title="#" class="bar" style="width: 0%;"></div>
+        </div>
+        <div>
+            <h5>Write here the transcription</h5>
+            <form class="form-inline">
+                <textarea id="text" rows="10" style="width:100%;"></textarea>
+            </form>
+            <button class="btn btn-submit">Submit transcription!</button>
+        </div>
+    </div>
 </div>
 
 <script src="http://code.jquery.com/ui/1.9.1/jquery-ui.js"></script>
@@ -81,7 +79,9 @@
 <!-- <script type="text/javascript" src="https://raw.github.com/mozilla/pdf.js/gh-pages/build/pdf.js"></script>-->
 <!-- For this reason we use the one provided by CrowdCrafting -->
 <script src="/static/js/pdf/pdf.js" type="text/javascript"></script>
-<script>
+
+<script type="text/javascript">
+(function() {
 //
 // Disable workers to avoid yet another cross-origin issue (workers need the URL of
 // the script to be loaded, and currently do not allow cross-origin scripts)
@@ -109,19 +109,19 @@ function renderPage(task) {
 
 function zoom(task, v) {
     task.pdfDoc.getPage(task.pageNum).then(function(page){
-        if (v==1) {
+        if (v === 1) {
             task.scale = task.scale + 0.1;
             if (task.scale >= 2) {
                 task.scale = 2;
             }
         }
-        if (v==-1) {
+        if (v === -1) {
             task.scale = task.scale - 0.1;
             if (task.scale <= 0) {
                 task.scale = 0.1;
             }
         }
-        if (v==0) {
+        if (v === 0) {
             task.scale = 0.8;
         }
         var viewport = page.getViewport(task.scale + 0.1);
@@ -153,28 +153,22 @@ function enableDisabledNavButtons(task){
     }
 }
 
-//
-// Go to previous page
-//
-function goPrevious(task) {
-  if (task.pageNum <= 1)
-    return;
-  task.pageNum--;
-  renderPage(task);
-  $("#currentPage").text(task.pageNum);
-  enableDisabledNavButtons(task);
+function goPreviousPage(task) {
+    if (task.pageNum <= 1)
+        return;
+    task.pageNum--;
+    renderPage(task);
+    $("#currentPage").text(task.pageNum);
+    enableDisabledNavButtons(task);
 }
 
-//
-// Go to next page
-//
-function goNext(task) {
-  if (task.pageNum >= task.pdfDoc.numPages)
-    return;
-  task.pageNum++;
-  renderPage(task);
-  $("#currentPage").text(task.pageNum);
-  enableDisabledNavButtons(task);
+function goNextPage(task) {
+    if (task.pageNum >= task.pdfDoc.numPages)
+        return;
+    task.pageNum++;
+    renderPage(task);
+    $("#currentPage").text(task.pageNum);
+    enableDisabledNavButtons(task);
 }
 
 function loadUserProgress() {
@@ -256,11 +250,11 @@ pybossa.presentTask(function(task, deferred){
         });
         $(".btn-navigate").off('click').on('click', function(evt){
             if ($(this).attr("value") === "next") {
-                goNext(task);
+                goNextPage(task);
                 return;
             }
             if ($(this).attr("value") === "prev") {
-                goPrevious(task);
+                goPreviousPage(task);
                 return;
             }
         });
@@ -281,4 +275,5 @@ pybossa.presentTask(function(task, deferred){
 });
 
 pybossa.run('pdftranscribe');
+})();
 </script>
